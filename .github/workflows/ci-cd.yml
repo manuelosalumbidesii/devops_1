@@ -1,0 +1,36 @@
+name: CI/CD Pipeline
+
+# Trigger the workflow on push to main branch
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v2  # Magsusumite ng code mula sa repo
+
+    - name: Set up Docker Buildx
+      uses: docker/setup-buildx-action@v1
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}  # I-store ang username sa GitHub Secrets
+        password: ${{ secrets.DOCKER_PASSWORD }}  # I-store ang password sa GitHub Secrets
+
+    - name: Pull Docker Image
+      run: docker pull <docker-username>/<image-name>:<tag>
+
+    - name: Run Tests (Optional)
+      run: |
+        docker run <docker-username>/<image-name>:<tag> ./run-tests.sh  # Kung may testing script ka
+
+    - name: Deploy to Server (Optional)
+      run: |
+        ssh user@server 'docker pull <docker-username>/<image-name>:<tag>'
+        ssh user@server 'docker run -d <docker-username>/<image-name>:<tag>'
